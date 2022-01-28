@@ -21,7 +21,6 @@
 
 """
 
-
 import json
 import os
 import re
@@ -30,8 +29,7 @@ import tempfile
 from collections import defaultdict
 from functools import total_ordering
 from itertools import zip_longest
-
-import requests
+import urllib.request as request
 
 from workflow.util import atomic_writer
 
@@ -194,10 +192,10 @@ class Download(object):
     def __eq__(self, other):
         """Compare Downloads based on version numbers."""
         if (
-            self.url != other.url
-            or self.filename != other.filename
-            or self.version != other.version
-            or self.prerelease != other.prerelease
+                self.url != other.url
+                or self.filename != other.filename
+                or self.version != other.version
+                or self.prerelease != other.prerelease
         ):
             return False
         return True
@@ -279,7 +277,7 @@ class Version(object):
             # Build info
             idx = suffix.find("+")
             if idx > -1:
-                self.build = suffix[idx + 1 :]
+                self.build = suffix[idx + 1:]
                 suffix = suffix[:idx]
             if suffix:
                 if not suffix.startswith("-"):
@@ -389,7 +387,7 @@ def retrieve_download(dl):
     path = os.path.join(tempfile.gettempdir(), dl.filename)
     wf().logger.debug("downloading update from " "%r to %r ...", dl.url, path)
 
-    r = requests.get(dl.url)
+    r = request.urlopen(dl.url)
     r.raise_for_status()
 
     with atomic_writer(path, "wb") as file_obj:
@@ -429,7 +427,7 @@ def get_downloads(repo):
 
     def _fetch():
         wf().logger.info("retrieving releases for %r ...", repo)
-        r = requests.get(url)
+        r = request.urlopen(url)
         r.raise_for_status()
         return r.content
 
@@ -550,10 +548,12 @@ if __name__ == "__main__":  # pragma: nocover
 
     prereleases = False
 
+
     def show_help(status=0):
         """Print help message."""
         print("usage: update.py (check|install) " "[--prereleases] <repo> <version>")
         sys.exit(status)
+
 
     argv = sys.argv[:]
     if "-h" in argv or "--help" in argv:
